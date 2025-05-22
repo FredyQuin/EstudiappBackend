@@ -39,7 +39,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <div className="left-panel">
-          <h2>Bienvenido a Estudiapp</h2>
+          <h2>Bienvenido a la pagina</h2>
           <p>Tu plataforma integral para el aprendizaje y el desarrollo personal.</p>
         </div>
         <div className="right-panel">
