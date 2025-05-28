@@ -17,6 +17,7 @@ body {
   overflow: hidden;
 }
 
+
 .login-container {
   display: flex;
   justify-content: center;
@@ -128,25 +129,59 @@ button:hover {
   transform: scale(1.05);
 }
 
-.extra-links {
-  display: flex;
-  justify-content: space-between;
+/* Estilos para la tabla de contenido académico */
+.data-table {
   width: 100%;
-  margin-top: 10px;
-  font-size: 14px;
-  gap: 15px;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  animation: fadeInTable 0.6s ease-in-out;
+  margin-top: 20px;
 }
 
-.extra-links a {
-  color: #508484;
-  text-decoration: none;
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #508484;
+  color: white;
   font-weight: 600;
-  transition: color 0.3s ease;
 }
 
-.extra-links a:hover {
-  color: #4D5359;
-  text-decoration: underline;
+.data-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Efecto hover en filas de la tabla */
+.data-table tr:hover {
+  background-color: #e0e0e0;
+  transition: background 0.3s ease-in-out;
+}
+
+/* Animaciones */
+@keyframes fadeInTable {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .panel-container {
@@ -155,7 +190,9 @@ button:hover {
   background: white;
   border-radius: 12px;
   box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
-  width: 420px;
+  width: 80%;
+  margin: auto;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 .panel-container a {
@@ -168,15 +205,4 @@ button:hover {
 
 .panel-container a:hover {
   text-decoration: underline;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
