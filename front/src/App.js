@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  Link,
+  useParams
+} from "react-router-dom";
 import "./App.css";
 
 const Login = () => {
@@ -13,10 +20,9 @@ const Login = () => {
       const response = await fetch("http://localhost:3001/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo: email, contrasena: password })
+        body: JSON.stringify({ correo: email, contrasena: password }),
       });
       const data = await response.json();
-
       if (response.ok) {
         localStorage.setItem("usuario", JSON.stringify(data));
         if (data.rol === "admin") navigate("/admin");
@@ -42,8 +48,20 @@ const Login = () => {
         <div className="right-panel">
           <h2>Iniciar Sesión</h2>
           <form onSubmit={handleLogin}>
-            <input type="text" placeholder="Correo Electrónico" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              type="text"
+              placeholder="Correo Electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
             <div className="remember-me">
               <input type="checkbox" id="remember" />
               <label htmlFor="remember">Recordarme</label>
@@ -51,8 +69,12 @@ const Login = () => {
             <button type="submit">Iniciar Sesión</button>
           </form>
           <div className="extra-links">
-            <span>¿Eres nuevo? <Link to="/registro">Regístrate aquí</Link></span>
-            <span><Link to="/recuperar-contrasena">¿Olvidaste tu contraseña?</Link></span>
+            <span>
+              ¿Eres nuevo? <Link to="/registro">Regístrate aquí</Link>
+            </span>
+            <span>
+              <Link to="/recuperar-contrasena">¿Olvidaste tu contraseña?</Link>
+            </span>
           </div>
         </div>
       </div>
@@ -67,97 +89,128 @@ const ProfesorPanel = () => {
     const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
     if (usuarioGuardado?.id_usuario) {
       fetch(`http://localhost:3001/contenido/${usuarioGuardado.id_usuario}`)
-        .then(res => res.json())
-        .then(data => setContenido(data))
-        .catch(err => console.error(err));
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Contenido recibido:", data);
+          setContenido(data);
+        })
+        .catch((err) => console.error(err));
     }
   }, []);
 
-  const estructura = contenido.reduce((acc, row) => {
+  // Agrupa la información para obtener módulos únicos.
+  const modulos = contenido.reduce((acc, row) => {
     if (!acc[row.id_modulo]) {
       acc[row.id_modulo] = {
         nombre: row.modulo_nombre,
-        asignaturas: {}
       };
     }
-
-    if (!acc[row.id_modulo].asignaturas[row.id_asignatura]) {
-      acc[row.id_modulo].asignaturas[row.id_asignatura] = {
-        nombre: row.asignatura_nombre,
-        competencia: row.competencia,
-        temas: [],
-        evaluaciones: []
-      };
-    }
-
-    if (row.id_tema && !acc[row.id_modulo].asignaturas[row.id_asignatura].temas.some(t => t.id === row.id_tema)) {
-      acc[row.id_modulo].asignaturas[row.id_asignatura].temas.push({
-        id: row.id_tema,
-        titulo: row.tema_titulo,
-        descripcion: row.descripcion
-      });
-    }
-
-    if (row.id_evaluacion && !acc[row.id_modulo].asignaturas[row.id_asignatura].evaluaciones.some(e => e.id === row.id_evaluacion)) {
-      acc[row.id_modulo].asignaturas[row.id_asignatura].evaluaciones.push({
-        id: row.id_evaluacion,
-        tipo: row.tipo,
-        titulo: row.evaluacion_titulo,
-        instrucciones: row.instrucciones,
-        fecha: row.fecha
-      });
-    }
-
     return acc;
   }, {});
 
   return (
     <div className="panel-container">
-      <h2>Contenido Académico</h2>
+      <h2>Contenido Académico - Módulos</h2>
       <table className="data-table">
         <thead>
           <tr>
             <th>Módulo</th>
-            <th>Asignatura</th>
-            <th>Competencia</th>
-            <th>Temas</th>
-            <th>Evaluaciones</th>
           </tr>
         </thead>
         <tbody>
-          {Object.entries(estructura).map(([modId, mod]) =>
-            Object.entries(mod.asignaturas).map(([asigId, asig]) => (
-              <tr key={`${modId}-${asigId}`}>
-                <td>{mod.nombre}</td>
-                <td>{asig.nombre}</td>
-                <td>{asig.competencia}</td>
-                <td>
-                  <ul>
-                    {asig.temas.map(tema => (
-                      <li key={tema.id}><strong>{tema.titulo}</strong>: {tema.descripcion}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td>
-                  <ul>
-                    {asig.evaluaciones.length > 0 ? (
-                      asig.evaluaciones.map(evaluacion => (
-                        <li key={evaluacion.id}>
-                          <strong>{evaluacion.tipo}:</strong> {evaluacion.titulo} - {evaluacion.fecha}
-                          <br />
-                          {evaluacion.instrucciones}
-                        </li>
-                      ))
-                    ) : (
-                      <li>No hay evaluaciones disponibles</li>
-                    )}
-                  </ul>
-                </td>
-              </tr>
-            ))
-          )}
+          {Object.entries(modulos).map(([modId, mod]) => (
+            <tr key={modId}>
+              <td>
+                <Link to={`/profesor/modulo/${modId}`}>{mod.nombre}</Link>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
+    </div>
+  );
+};
+
+const ModuloDetalle = () => {
+  const { id } = useParams();
+  const [modulo, setModulo] = useState(null);
+
+  useEffect(() => {
+    console.log("Obteniendo detalle para el módulo con ID:", id);
+    fetch(`http://localhost:3001/modulo/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Datos del módulo:", data);
+        setModulo(data);
+      })
+      .catch((err) => console.error(err));
+  }, [id]);
+
+  if (!modulo)
+    return (
+      <div className="panel-container">
+        <h2>Cargando detalles del módulo...</h2>
+      </div>
+    );
+
+  return (
+    <div className="panel-container">
+      <h2>Detalles del Módulo</h2>
+      <p>
+        <strong>ID:</strong> {modulo.id_modulo}
+      </p>
+      <p>
+        <strong>Nombre:</strong> {modulo.nombre}
+      </p>
+      {modulo.descripcion && (
+        <p>
+          <strong>Descripción:</strong> {modulo.descripcion}
+        </p>
+      )}
+      {modulo.periodos && modulo.periodos.length > 0 ? (
+        <>
+          <h3>Periodos</h3>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>ID Periodo</th>
+                <th>Nombre</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Asignatura</th>
+                <th>Temas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modulo.periodos.map((periodo) => (
+                <tr key={periodo.id_periodo}>
+                  <td>{periodo.id_periodo}</td>
+                  <td>{periodo.nombre}</td>
+                  <td>{periodo.fecha_inicio}</td>
+                  <td>{periodo.fecha_fin}</td>
+                  <td>{periodo.asignatura_nombre}</td>
+                  <td>
+                    {periodo.temas && periodo.temas.length > 0 ? (
+                      <ul>
+                        {periodo.temas.map((tema) => (
+                          <li key={tema.id_tema}>
+                            <strong>{tema.titulo}</strong>: {tema.descripcion}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "No hay temas"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      ) : (
+        <p>No se encontraron periodos para este módulo.</p>
+      )}
+      <Link to="/profesor">Volver al Panel</Link>
     </div>
   );
 };
@@ -192,6 +245,7 @@ const App = () => {
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/profesor" element={<ProfesorPanel />} />
+        <Route path="/profesor/modulo/:id" element={<ModuloDetalle />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
       </Routes>
