@@ -24,5 +24,3 @@ app.use('/api/usuarios', usuarioRouter);
 app.listen(3001, () => {
   console.log('Servidor backend corriendo en puerto 3001');
 });
-
-//actualizacion

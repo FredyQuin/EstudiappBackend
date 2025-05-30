@@ -17,7 +17,7 @@ body {
   overflow: hidden;
 }
 
-
+/* Estilos para la pantalla de login */
 .login-container {
   display: flex;
   justify-content: center;
@@ -129,7 +129,7 @@ button:hover {
   transform: scale(1.05);
 }
 
-/* Estilos para la tabla de contenido académico */
+/* Estilos para las tablas (utilizadas en el panel y en la vista de detalles) */
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -139,7 +139,8 @@ button:hover {
   margin-top: 20px;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
@@ -155,13 +156,12 @@ button:hover {
   background-color: #f2f2f2;
 }
 
-/* Efecto hover en filas de la tabla */
 .data-table tr:hover {
   background-color: #e0e0e0;
   transition: background 0.3s ease-in-out;
 }
 
-/* Animaciones */
+/* Animaciones para el fade-in */
 @keyframes fadeInTable {
   from {
     opacity: 0;
@@ -184,6 +184,7 @@ button:hover {
   }
 }
 
+/* Estilos para el contenedor de paneles */
 .panel-container {
   text-align: center;
   padding: 40px;
