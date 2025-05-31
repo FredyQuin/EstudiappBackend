@@ -17,18 +17,34 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:3001/login", {
+      const response = await fetch("http://localhost:3001/api/auth/login", { // Asegúrate que la ruta sea correcta
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo: email, contrasena: password }),
       });
+      
       const data = await response.json();
+      
       if (response.ok) {
-        localStorage.setItem("usuario", JSON.stringify(data));
-        if (data.rol === "admin") navigate("/admin");
-        else if (data.rol === "profesor") navigate("/profesor");
-        else if (data.rol === "estudiante") navigate("/usuario");
-        else alert("Rol no reconocido");
+        // Guardar toda la información del usuario
+        localStorage.setItem("usuario", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
+        
+        // Redirigir según rol (como número)
+        switch(data.user.rol) {
+          case 1: // Profesor
+            navigate("/profesor");
+            break;
+          case 2: // Estudiante
+            navigate("/estudiante");
+            break;
+          case 3: // Admin
+            navigate("/admin");
+            break;
+          default:
+            alert("Rol no reconocido");
+            navigate("/");
+        }
       } else {
         alert(data.error || "Error de autenticación");
       }
@@ -238,17 +254,100 @@ const RecuperarContrasena = () => (
     <Link to="/">Volver al inicio de sesión</Link>
   </div>
 );
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!usuario) {
+      navigate("/");
+    } else if (allowedRoles && !allowedRoles.includes(usuario.rol)) {
+      navigate("/no-autorizado");
+    }
+  }, [usuario, navigate, allowedRoles]);
+
+  if (!usuario || (allowedRoles && !allowedRoles.includes(usuario.rol))) {
+    return null; // O un spinner de carga
+  }
+
+  return children;
+};
+
+const EstudiantePanel = () => {
+  const [modulos, setModulos] = useState([]);
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  useEffect(() => {
+    if (usuario?.id_usuario) {
+      fetch(`http://localhost:3001/api/estudiante/${usuario.id_usuario}/modulos`)
+        .then(res => res.json())
+        .then(data => setModulos(data))
+        .catch(err => console.error(err));
+    }
+  }, [usuario]);
+
+  return (
+    <div className="panel-container">
+      <h2>Panel del Estudiante</h2>
+      <h3>Tus Módulos</h3>
+      <div className="modulos-grid">
+        {modulos.map(modulo => (
+          <div key={modulo.id_modulo} className="modulo-card">
+            <h4>{modulo.nombre}</h4>
+            <Link to={`/estudiante/modulo/${modulo.id_modulo}`}>Ver contenido</Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const NoAutorizado = () => {
+  return (
+    <div className="panel-container">
+      <h2>Acceso No Autorizado</h2>
+      <p>No tienes permisos para acceder a esta página.</p>
+      <Link to="/">Volver al inicio</Link>
+    </div>
+  );
+};
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/profesor" element={<ProfesorPanel />} />
-        <Route path="/profesor/modulo/:id" element={<ModuloDetalle />} />
+        
+        {/* Ruta de Admin */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={[3]}>
+            <AdminPanel />
+          </ProtectedRoute>
+        } />
+        
+        {/* Ruta de Profesor */}
+        <Route path="/profesor" element={
+          <ProtectedRoute allowedRoles={[1]}>
+            <ProfesorPanel />
+          </ProtectedRoute>
+        } />
+        
+        {/* Ruta de Estudiante */}
+        <Route path="/estudiante" element={
+          <ProtectedRoute allowedRoles={[2]}>
+            <EstudiantePanel />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/profesor/modulo/:id" element={
+          <ProtectedRoute allowedRoles={[1]}>
+            <ModuloDetalle />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+        <Route path="/no-autorizado" element={<NoAutorizado />} />
       </Routes>
     </Router>
   );

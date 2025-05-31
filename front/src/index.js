@@ -1,6 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Login from "./App";  // 🔹 Asegúrate de que esté bien importado
+import App from "./App";  // Cambiado de Login a App
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<Login />);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
