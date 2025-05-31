@@ -28,6 +28,9 @@ app.use('/api/asignaturas', asignaturaRoutes);
 const periodoRoutes = require('./routes/periodo.routes');
 app.use('/api/periodos', periodoRoutes);
 
+const temaRoutes = require('./routes/tema.routes');
+app.use('/api/temas', temaRoutes);
+
 app.listen(3001, () => {
   console.log('Servidor backend corriendo en puerto 3001');
 });
