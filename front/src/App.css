@@ -207,3 +207,9 @@ button:hover {
 .panel-container a:hover {
   text-decoration: underline;
 }
+
+.logo-image {
+  width: 100px;
+  height: auto;
+  margin-bottom: 20px;
+}

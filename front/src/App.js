@@ -42,6 +42,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <div className="left-panel">
+           <img src="/logo.png" alt="EstudiApp Logo" className="logo-image" />
           <h2>Bienvenido a estudiapp</h2>
           <p>Tu plataforma integral para el aprendizaje y el desarrollo personal.</p>
         </div>
