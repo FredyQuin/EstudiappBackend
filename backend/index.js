@@ -25,6 +25,8 @@ app.use('/api/modulos', moduloRoutes); // ← Exactamente así
 const asignaturaRoutes = require('./routes/asignatura.routes');
 app.use('/api/asignaturas', asignaturaRoutes);
 // ... otras rutas ...
+const periodoRoutes = require('./routes/periodo.routes');
+app.use('/api/periodos', periodoRoutes);
 
 app.listen(3001, () => {
   console.log('Servidor backend corriendo en puerto 3001');
