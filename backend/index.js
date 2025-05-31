@@ -19,7 +19,11 @@ app.use(cors({
 const usuarioRouter = require('./routes/usuario.routes');
 app.use('/api/usuarios', usuarioRouter);
 
-// ... otras rutas ...
+const moduloRoutes = require('./routes/modulo.routes');
+app.use('/api/modulos', moduloRoutes); // ← Exactamente así
+
+const asignaturaRoutes = require('./routes/asignatura.routes');
+app.use('/api/asignaturas', asignaturaRoutes);
 
 app.listen(3001, () => {
   console.log('Servidor backend corriendo en puerto 3001');
