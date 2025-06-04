@@ -1,5 +1,5 @@
 // backend/db.js
-const mysql = require('mysql2/promise'); // Importa la versión con promesas
+const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',

@@ -5,6 +5,6 @@ const authProfesor = require('../middleware/authProfesor');
 const profesorController = require('../controllers/profesorController');
 
 router.get('/modulos', authProfesor, profesorController.getModulos);
-// ... otras rutas profesor
+
 
 module.exports = router;

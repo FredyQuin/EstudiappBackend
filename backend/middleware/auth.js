@@ -6,7 +6,7 @@ const secret = process.env.JWT_SECRET || 'tu_secreto_jwt_super_seguro';
 
 // Middleware general de autenticación
 const authenticate = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1]; // Bearer token
+  const token = req.headers['authorization']?.split(' ')[1]; 
   
   if (!token) {
     return res.status(401).json({ error: 'Token no proporcionado' });
@@ -17,12 +17,12 @@ const authenticate = (req, res, next) => {
       return res.status(403).json({ error: 'Token inválido o expirado' });
     }
 
-    // Verificar que el usuario aún existe en la base de datos
+
     db.query('SELECT id_usuario, rol_id FROM usuario WHERE id_usuario = ?', [decoded.id], (err, results) => {
       if (err) return res.status(500).json({ error: 'Error al verificar usuario' });
       if (!results.length) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-      // Adjuntar información del usuario al request
+
       req.user = {
         id: results[0].id_usuario,
         rol: results[0].rol_id

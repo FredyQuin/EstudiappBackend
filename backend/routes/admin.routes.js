@@ -5,6 +5,6 @@ const authAdmin = require('../middleware/authAdmin');
 const adminController = require('../controllers/adminController');
 
 router.get('/dashboard', authAdmin, adminController.getDashboard);
-// ... otras rutas admin
+
 
 module.exports = router;

@@ -25,7 +25,7 @@ const asignaturaRoutes = require('./routes/asignatura.routes');
 const temaRoutes = require('./routes/tema.routes');
 const periodoRoutes = require('./routes/periodo.routes');
 
-// Endpoint de Login (Autenticación)
+// Endpoint de Login 
 app.post('/api/auth/login', async (req, res) => {
   const { correo, contrasena } = req.body;
 
