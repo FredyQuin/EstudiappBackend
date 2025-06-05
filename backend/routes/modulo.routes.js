@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const moduloCtrl = require('../controllers/modulo.controller');
-const authAdmin = require('../middleware/authAdmin');
+
 
 // Rutas públicas (no requieren admin)
 router.get('/', moduloCtrl.getAll);

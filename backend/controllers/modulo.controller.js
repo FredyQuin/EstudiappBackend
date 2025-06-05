@@ -62,28 +62,35 @@ exports.getModuloCompleto = async (req, res) => {
 
 // Crear módulo
 exports.create = async (req, res) => {
-  const { nombre, profesor_id } = req.body;
-  const adminId = req.user.id;
-
   try {
-    const [result] = await db.query(
-      'INSERT INTO modulo (nombre, profesor_id) VALUES (?, ?)',
-      [nombre, profesor_id]
+    const { nombre, descripcion, asignatura_id } = req.body;
+
+    if (!nombre || !descripcion || !asignatura_id) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    const [result] = await db.execute(
+      'INSERT INTO modulo (nombre, descripcion, asignatura_id) VALUES (?, ?, ?)',
+      [nombre, descripcion, asignatura_id]
     );
 
-    await db.query(
+    // Como ya no usas autenticación, adminId queda en null
+    const adminId = null;
+
+    await db.execute(
       `INSERT INTO historial_eliminacion 
-       (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
+        (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
        VALUES (?, ?, ?, ?, ?)`,
-      ['modulo', result.insertId, nombre, adminId, 'Creación por admin']
+      ['modulo', result.insertId, nombre, adminId, 'Creación pública sin admin']
     );
 
-    res.json({ message: 'Módulo creado', id_modulo: result.insertId });
-  } catch (err) {
-    console.error(err);
+    res.status(201).json({ id: result.insertId });
+  } catch (error) {
+    console.error('Error en create módulo:', error);
     res.status(500).json({ error: 'Error al crear módulo' });
   }
 };
+
 
 // Actualizar módulo
 exports.update = async (req, res) => {
@@ -105,13 +112,9 @@ exports.update = async (req, res) => {
 // Eliminar módulo
 exports.delete = async (req, res) => {
   const { id } = req.params;
-  const adminId = req.user.id;
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM modulo WHERE id_modulo = ?',
-      [id]
-    );
+    const [rows] = await db.promise().query('SELECT * FROM modulo WHERE id_modulo = ?', [id]);
 
     if (!rows.length) {
       return res.status(404).json({ error: 'Módulo no encontrado' });
@@ -119,18 +122,18 @@ exports.delete = async (req, res) => {
 
     const modulo = rows[0];
 
-    await db.query('DELETE FROM modulo WHERE id_modulo = ?', [id]);
+    await db.promise().query('DELETE FROM modulo WHERE id_modulo = ?', [id]);
 
-    await db.query(
+    await db.promise().query(
       `INSERT INTO historial_eliminacion 
-       (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
+        (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
        VALUES (?, ?, ?, ?, ?)`,
-      ['modulo', id, modulo.nombre, adminId, 'Eliminación por admin']
+      ['modulo', id, modulo.nombre, null, 'Eliminación pública sin admin']
     );
 
     res.json({ message: 'Módulo eliminado y registrado en historial' });
   } catch (err) {
-    console.error(err);
+    console.error('Error en delete módulo:', err);
     res.status(500).json({ error: 'Error al eliminar módulo' });
   }
 };
