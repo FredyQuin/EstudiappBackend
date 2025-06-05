@@ -9,8 +9,8 @@ router.get('/profesor/:profesor_id', moduloCtrl.getByProfesor);
 router.get('/completo/:id', moduloCtrl.getModuloCompleto);
 
 // Rutas protegidas (requieren admin)
-router.post('/', authAdmin, moduloCtrl.create);
-router.put('/:id', authAdmin, moduloCtrl.update);
-router.delete('/:id', authAdmin, moduloCtrl.delete);
+router.post('/', moduloCtrl.create);
+router.put('/:id', moduloCtrl.update);
+router.delete('/:id', moduloCtrl.delete);
 
 module.exports = router;

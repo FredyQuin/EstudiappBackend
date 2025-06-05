@@ -36,16 +36,25 @@ const authenticate = (req, res, next) => {
 // Middleware para verificar roles específicos
 const checkRole = (roles) => {
   return (req, res, next) => {
+    if (!req.user) {
+      console.log('Usuario no autenticado al llegar a checkRole');
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
     if (!roles.includes(req.user.rol)) {
+      console.log(`Rol ${req.user.rol} no autorizado. Requiere: ${roles}`);
       return res.status(403).json({ 
         error: 'Acceso no autorizado',
         requiredRoles: roles,
         currentRole: req.user.rol
       });
     }
+
+    console.log(`Usuario autenticado con rol: ${req.user.rol}`);
     next();
   };
 };
+
 
 module.exports = {
   authenticate,

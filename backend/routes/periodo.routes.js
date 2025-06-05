@@ -10,8 +10,8 @@ router.get('/asignatura/:asignatura_id', periodoCtrl.getByAsignatura);
 router.get('/completo/:id', periodoCtrl.getPeriodoCompleto);
 
 // Rutas protegidas (requieren admin)
-router.post('/', authAdmin, periodoCtrl.create);
-router.put('/:id', authAdmin, periodoCtrl.update);
-router.delete('/:id', authAdmin, periodoCtrl.delete);
+router.post('/', periodoCtrl.create);
+router.put('/:id', periodoCtrl.update);
+router.delete('/:id', periodoCtrl.delete);
 
 module.exports = router;

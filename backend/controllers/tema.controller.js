@@ -16,33 +16,19 @@ exports.getAll = async (req, res) => {
 
 // Crear nuevo tema
 exports.create = async (req, res) => {
-  const { titulo, descripcion = '', asignatura_id } = req.body;
-  const adminId = req.user?.id;
-
-  if (!titulo || !asignatura_id) {
-    return res.status(400).json({ error: 'Título y asignatura_id son requeridos' });
-  }
-
   try {
-    const [result] = await db.promise().query(
+    const { titulo, descripcion, asignatura_id } = req.body;
+    console.log('Entrando al create');
+    console.log('Usuario:', req.user);
+
+    const [result] = await db.execute(
       'INSERT INTO tema (titulo, descripcion, asignatura_id) VALUES (?, ?, ?)',
       [titulo, descripcion, asignatura_id]
     );
 
-    await db.promise().query(
-      `INSERT INTO historial_eliminacion 
-        (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
-       VALUES (?, ?, ?, ?, ?)`,
-      ['tema', result.insertId, titulo, adminId || null, 'Creación por admin']
-    );
-
-    res.status(201).json({
-      message: 'Tema creado',
-      id_tema: result.insertId,
-      tema: { id_tema: result.insertId, titulo, descripcion, asignatura_id }
-    });
-  } catch (err) {
-    console.error('Error en create tema:', err);
+    res.status(201).json({ id: result.insertId });
+  } catch (error) {
+    console.error('Error en create tema:', error);
     res.status(500).json({ error: 'Error al crear tema' });
   }
 };
@@ -57,7 +43,7 @@ exports.update = async (req, res) => {
   }
 
   try {
-    await db.promise().query(
+    await db.query(
       'UPDATE tema SET titulo = ?, descripcion = ?, asignatura_id = ? WHERE id_tema = ?',
       [titulo, descripcion, asignatura_id, id]
     );
@@ -75,7 +61,8 @@ exports.delete = async (req, res) => {
   const adminId = req.user?.id;
 
   try {
-    const [rows] = await db.promise().query('SELECT * FROM tema WHERE id_tema = ?', [id]);
+    // Buscar el tema
+    const [rows] = await db.query('SELECT * FROM tema WHERE id_tema = ?', [id]);
 
     if (!rows.length) {
       return res.status(404).json({ error: 'Tema no encontrado' });
@@ -83,9 +70,11 @@ exports.delete = async (req, res) => {
 
     const tema = rows[0];
 
-    await db.promise().query('DELETE FROM tema WHERE id_tema = ?', [id]);
+    // Eliminar el tema
+    await db.query('DELETE FROM tema WHERE id_tema = ?', [id]);
 
-    await db.promise().query(
+    // Registrar en historial de eliminación
+    await db.query(
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
        VALUES (?, ?, ?, ?, ?)`,
@@ -98,3 +87,4 @@ exports.delete = async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar tema' });
   }
 };
+
