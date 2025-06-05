@@ -3,84 +3,16 @@ const db = require('../db');
 // Obtener todos los temas con nombre de asignatura y módulo
 exports.getAll = async (req, res) => {
   try {
-    console.log("Ejecutando consulta para obtener todos los temas...");
-    const [results] = await db.promise().query(`
-      SELECT t.*, a.nombre AS asignatura_nombre, m.nombre AS modulo_nombre
-      FROM tema t
-      JOIN asignatura a ON t.asignatura_id = a.id_asignatura
-      JOIN modulo m ON a.modulo_id = m.id_modulo
-      ORDER BY t.id_tema;
-    `);
-    res.json(results);
-  } catch (err) {
-    console.error("Error en getAll temas:", err.message, err.stack, err);
+    const [temas] = await db.query('SELECT * FROM tema');
+    res.json(temas);
+  } catch (error) {
+    console.error("Error básico en getAll:", error);
     res.status(500).json({ error: 'Error al obtener temas' });
   }
 };
 
+
 // Obtener temas por asignatura
-exports.getByAsignatura = async (req, res) => {
-  const { asignatura_id } = req.params;
-  try {
-    const [results] = await db.promise().query(`
-      SELECT t.*, COUNT(c.id_contenido) AS total_contenidos
-      FROM tema t
-      LEFT JOIN contenido c ON c.tema_id = t.id_tema
-      WHERE t.asignatura_id = ?
-      GROUP BY t.id_tema
-      ORDER BY t.id_tema
-    `, [asignatura_id]);
-
-    res.json(results);
-  } catch (err) {
-    console.error('Error en getByAsignatura:', err);
-    res.status(500).json({ error: 'Error al buscar temas de la asignatura' });
-  }
-};
-
-// Obtener tema completo con asignatura, módulo y contenidos
-exports.getTemaCompleto = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const [results] = await db.promise().query(`
-      SELECT 
-        t.*, 
-        a.nombre AS asignatura_nombre,
-        m.nombre AS modulo_nombre,
-        JSON_ARRAYAGG(
-          IF(c.id_contenido IS NOT NULL, 
-            JSON_OBJECT(
-              'id', c.id_contenido,
-              'tipo', c.tipo,
-              'titulo', c.titulo,
-              'url', c.url,
-              'fecha_creacion', c.fecha_creacion
-            ), NULL
-          )
-        ) AS contenidos
-      FROM tema t
-      JOIN asignatura a ON t.asignatura_id = a.id_asignatura
-      JOIN modulo m ON a.modulo_id = m.id_modulo
-      LEFT JOIN contenido c ON c.tema_id = t.id_tema
-      WHERE t.id_tema = ?
-      GROUP BY t.id_tema
-    `, [id]);
-
-    if (!results.length) {
-      return res.status(404).json({ error: 'Tema no encontrado' });
-    }
-
-    const tema = {
-      ...results[0],
-      contenidos: JSON.parse(results[0].contenidos).filter(Boolean)
-    };
-
-    res.json(tema);
-  } catch (err) {
-    console.error('Error en getTemaCompleto:', err);
-    res.status(500).json({ error: 'Error al obtener tema completo' });
-  }
-};
 
 // Crear nuevo tema
 exports.create = async (req, res) => {

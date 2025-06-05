@@ -6,8 +6,7 @@ const authAdmin = require('../middleware/authAdmin');
 
 // Rutas públicas
 router.get('/', temaCtrl.getAll);
-router.get('/asignatura/:asignatura_id', temaCtrl.getByAsignatura);
-router.get('/completo/:id', temaCtrl.getTemaCompleto);
+
 
 // Rutas protegidas (requieren admin)
 router.post('/', authAdmin, temaCtrl.create);
