@@ -65,8 +65,6 @@ exports.getAsignaturaCompleta = async (req, res) => {
 // Crear nueva asignatura
 exports.create = async (req, res) => {
   const { nombre, modulo_id, competencia } = req.body;
-  const adminId = req.user.id;
-
   try {
     const [result] = await db.query(
       'INSERT INTO asignatura (nombre, modulo_id, competencia) VALUES (?, ?, ?)',
@@ -78,7 +76,7 @@ exports.create = async (req, res) => {
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
       VALUES (?, ?, ?, ?, ?)`,
-      ['asignatura', result.insertId, nombre, adminId, 'Creación por admin']
+      ['asignatura', result.insertId, nombre, null, 'Creación por admin']
     );
 
     res.json({ message: 'Asignatura creada', id_asignatura: result.insertId });
@@ -108,7 +106,7 @@ exports.update = async (req, res) => {
 // Eliminar asignatura
 exports.delete = async (req, res) => {
   const { id } = req.params;
-  const adminId = req.user.id;
+  
 
   try {
     const [rows] = await db.query(
@@ -128,7 +126,7 @@ exports.delete = async (req, res) => {
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
       VALUES (?, ?, ?, ?, ?)`,
-      ['asignatura', id, asignatura.nombre, adminId, 'Eliminación por admin']
+      ['asignatura', id, asignatura.nombre, null, 'Eliminación por admin']
     );
 
     res.json({ message: 'Asignatura eliminada y registrada en historial' });

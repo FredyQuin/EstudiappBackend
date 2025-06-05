@@ -59,7 +59,6 @@ exports.getPeriodoCompleto = async (req, res) => {
 // Crear nuevo período
 exports.create = async (req, res) => {
   const { nombre, fecha_inicio, fecha_fin, asignatura_id } = req.body;
-  const adminId = req.user.id;
 
   if (new Date(fecha_inicio) >= new Date(fecha_fin)) {
     return res.status(400).json({ error: 'La fecha de inicio debe ser anterior a la fecha fin' });
@@ -75,7 +74,7 @@ exports.create = async (req, res) => {
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
       VALUES (?, ?, ?, ?, ?)`,
-      ['periodo', result.insertId, nombre, adminId, 'Creación por admin']
+      ['periodo', result.insertId, nombre, null, 'Creación pública sin autenticación']
     );
 
     res.json({ message: 'Período creado', id_periodo: result.insertId });
@@ -110,7 +109,6 @@ exports.update = async (req, res) => {
 // Eliminar período
 exports.delete = async (req, res) => {
   const { id } = req.params;
-  const adminId = req.user.id;
 
   try {
     const [rows] = await db.query('SELECT * FROM periodo WHERE id_periodo = ?', [id]);
@@ -124,7 +122,7 @@ exports.delete = async (req, res) => {
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
       VALUES (?, ?, ?, ?, ?)`,
-      ['periodo', id, periodo.nombre, adminId, 'Eliminación por admin']
+      ['periodo', id, periodo.nombre, null, 'Eliminación pública sin autenticación']
     );
 
     res.json({ message: 'Período eliminado y registrado en historial' });
