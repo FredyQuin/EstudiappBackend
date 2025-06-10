@@ -24,6 +24,7 @@ const moduloRoutes = require('./routes/modulo.routes');
 const asignaturaRoutes = require('./routes/asignatura.routes');
 const temaRoutes = require('./routes/tema.routes');
 const periodoRoutes = require('./routes/periodo.routes');
+const historialRoutes = require('./routes/historial.routes');
 
 // Endpoint de Login 
 app.post('/api/auth/login', async (req, res) => {
@@ -102,6 +103,8 @@ app.use('/api/modulos', require('./routes/modulo.routes'));
 app.use('/api/asignaturas', require('./routes/asignatura.routes'));
 app.use('/api/temas', require('./routes/tema.routes'));
 app.use('/api/periodos', require('./routes/periodo.routes'));
+app.use('/api/historial', historialRoutes);
+
 
 // Manejo de errores
 app.use((err, req, res, next) => {

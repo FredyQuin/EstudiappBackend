@@ -9,7 +9,6 @@ router.get('/', temaCtrl.getAll);
 router.post('/debug-create', temaCtrl.create); // sin authAdmin
 
 
-
 // Rutas protegidas (requieren admin)
 router.post('/', temaCtrl.create);
 router.put('/:id', temaCtrl.update);
