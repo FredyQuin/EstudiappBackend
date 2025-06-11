@@ -1,6 +1,6 @@
 // controllers/authController.js
 const db = require('../db');
-const { secret } = require('../middleware/auth');
+const { secret } = require('./auth');
 const jwt = require('jsonwebtoken');
 
 exports.login = (req, res) => {

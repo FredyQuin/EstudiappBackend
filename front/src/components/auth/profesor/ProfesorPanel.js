@@ -23,7 +23,7 @@ const ProfesorPanel = () => {
         setError(null);
         
         // Obtener temas del profesor
-        const temasResponse = await fetch('http://localhost:3001/api/profesor/temas', {
+        const temasResponse = await fetch('http://localhost:3001/api/temas', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

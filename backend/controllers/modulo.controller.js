@@ -37,7 +37,7 @@ exports.getModuloCompleto = async (req, res) => {
        FROM modulo m
        LEFT JOIN profesor p ON m.profesor_id = p.id_profesor
        LEFT JOIN asignatura a ON a.modulo_id = m.id_modulo
-       WHERE m.id_modulo = ?
+       WHERE m.id_modulo = 1
        GROUP BY m.id_modulo`,
       [id]
     );
