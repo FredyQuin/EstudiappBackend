@@ -1,54 +1,125 @@
 const db = require('../db');
+const contenidoController = require('./contenidotema.controller.js');
 
-// Obtener todos los temas con nombre de asignatura y módulo
+// Obtener todos los temas con nombre de asignatura y periodo
 exports.getAll = async (req, res) => {
   try {
-    const [temas] = await db.query('SELECT * FROM tema');
+    const [temas] = await db.query(`
+      SELECT 
+        t.id_tema,
+        t.titulo,
+        t.descripcion,
+        t.asignatura_id,
+        t.periodo_id,
+        a.nombre AS asignatura,
+        p.nombre AS periodo
+      FROM tema t
+      LEFT JOIN asignatura a ON t.asignatura_id = a.id_asignatura
+      LEFT JOIN periodo p ON t.periodo_id = p.id_periodo
+    `);
     res.json(temas);
   } catch (error) {
-    console.error("Error básico en getAll:", error);
+    console.error("Error en getAll:", error);
     res.status(500).json({ error: 'Error al obtener temas' });
   }
 };
 
-
-// Obtener temas por asignatura
-
-// Crear nuevo tema
+// Crear nuevo tema con secciones
 exports.create = async (req, res) => {
-  try {
-    const { titulo, descripcion, asignatura_id } = req.body;
-    console.log('Entrando al create');
-    console.log('Usuario:', req.user);
+  const {
+    titulo,
+    descripcion,
+    asignatura_id,
+    periodo_id,
+    contenido_introduccion,
+    contenido_aspectos,
+    contenido_conclusion
+  } = req.body;
 
+  try {
     const [result] = await db.execute(
-      'INSERT INTO tema (titulo, descripcion, asignatura_id) VALUES (?, ?, ?)',
-      [titulo, descripcion, asignatura_id]
+      'INSERT INTO tema (titulo, descripcion, asignatura_id, periodo_id) VALUES (?, ?, ?, ?)',
+      [titulo, descripcion, asignatura_id, periodo_id]
     );
 
-    res.status(201).json({ id: result.insertId });
+    const temaId = result.insertId;
+
+    // Guardar secciones del contenido
+    await contenidoController.createSecciones(temaId, [
+      {
+        titulo_seccion: 'Introducción',
+        contenido_largo: contenido_introduccion,
+        tipo_contenido: 'texto',
+        orden: 1
+      },
+      {
+        titulo_seccion: 'Aspectos clave',
+        contenido_largo: contenido_aspectos,
+        tipo_contenido: 'lista',
+        orden: 2
+      },
+      {
+        titulo_seccion: 'Conclusión',
+        contenido_largo: contenido_conclusion,
+        tipo_contenido: 'texto',
+        orden: 3
+      }
+    ]);
+
+    res.status(201).json({ id: temaId, message: 'Tema y contenido creados' });
   } catch (error) {
     console.error('Error en create tema:', error);
-    res.status(500).json({ error: 'Error al crear tema' });
+    res.status(500).json({ error: 'Error al crear tema con contenido' });
   }
 };
 
 // Actualizar tema
 exports.update = async (req, res) => {
   const { id } = req.params;
-  const { titulo, descripcion, asignatura_id } = req.body;
+  const {
+    titulo,
+    descripcion,
+    asignatura_id,
+    periodo_id,
+    contenido_introduccion,
+    contenido_aspectos,
+    contenido_conclusion
+  } = req.body;
 
-  if (!titulo || !asignatura_id) {
-    return res.status(400).json({ error: 'Título y asignatura_id son requeridos' });
+  if (!titulo || !asignatura_id || !periodo_id) {
+    return res.status(400).json({ error: 'Faltan datos requeridos' });
   }
 
   try {
     await db.query(
-      'UPDATE tema SET titulo = ?, descripcion = ?, asignatura_id = ? WHERE id_tema = ?',
-      [titulo, descripcion, asignatura_id, id]
+      'UPDATE tema SET titulo = ?, descripcion = ?, asignatura_id = ?, periodo_id = ? WHERE id_tema = ?',
+      [titulo, descripcion, asignatura_id, periodo_id, id]
     );
 
-    res.json({ message: 'Tema actualizado' });
+    // Eliminar contenido previo y reinsertar actualizado
+    await contenidoController.deleteByTemaId(id);
+    await contenidoController.createSecciones(id, [
+      {
+        titulo_seccion: 'Introducción',
+        contenido_largo: contenido_introduccion,
+        tipo_contenido: 'texto',
+        orden: 1
+      },
+      {
+        titulo_seccion: 'Aspectos clave',
+        contenido_largo: contenido_aspectos,
+        tipo_contenido: 'lista',
+        orden: 2
+      },
+      {
+        titulo_seccion: 'Conclusión',
+        contenido_largo: contenido_conclusion,
+        tipo_contenido: 'texto',
+        orden: 3
+      }
+    ]);
+
+    res.json({ message: 'Tema actualizado correctamente' });
   } catch (err) {
     console.error('Error en update tema:', err);
     res.status(500).json({ error: 'Error al actualizar tema' });
@@ -61,7 +132,6 @@ exports.delete = async (req, res) => {
   const adminId = req.user?.id;
 
   try {
-    // Buscar el tema
     const [rows] = await db.query('SELECT * FROM tema WHERE id_tema = ?', [id]);
 
     if (!rows.length) {
@@ -70,10 +140,13 @@ exports.delete = async (req, res) => {
 
     const tema = rows[0];
 
+    // Eliminar contenido del tema
+    await contenidoController.deleteByTemaId(id);
+
     // Eliminar el tema
     await db.query('DELETE FROM tema WHERE id_tema = ?', [id]);
 
-    // Registrar en historial de eliminación
+    // Registrar en historial
     await db.query(
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
@@ -81,10 +154,9 @@ exports.delete = async (req, res) => {
       ['tema', id, tema.titulo, adminId || null, 'Eliminación por admin']
     );
 
-    res.json({ message: 'Tema eliminado y registrado en historial' });
+    res.json({ message: 'Tema y contenido eliminados' });
   } catch (err) {
     console.error('Error en delete tema:', err);
     res.status(500).json({ error: 'Error al eliminar tema' });
   }
 };
-

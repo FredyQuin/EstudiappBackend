@@ -1,58 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import TemaModal from './TemaModal';
 
 const ProfesorPanel = () => {
   const [temas, setTemas] = useState([]);
   const [periodos, setPeriodos] = useState([]);
+  const [asignaturas, setAsignaturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({
-    titulo: '',
-    descripcion: '',
-    periodo_id: ''
-  });
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [temaActual, setTemaActual] = useState(null);
+
   const token = localStorage.getItem('token');
   const usuario = JSON.parse(localStorage.getItem('usuario'));
 
-  // Obtener temas del profesor y periodos disponibles
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Obtener temas del profesor
-        const temasResponse = await fetch('http://localhost:3001/api/temas', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!temasResponse.ok) {
-          throw new Error('Error al obtener temas');
+
+        const [temasRes, periodosRes, asignaturasRes] = await Promise.all([
+          fetch('http://localhost:3001/api/temas', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('http://localhost:3001/api/periodos', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('http://localhost:3001/api/asignaturas', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        if (!temasRes.ok || !periodosRes.ok || !asignaturasRes.ok) {
+          throw new Error('Error al cargar datos');
         }
-        
-        const temasData = await temasResponse.json();
+
+        const [temasData, periodosData, asignaturasData] = await Promise.all([
+          temasRes.json(),
+          periodosRes.json(),
+          asignaturasRes.json()
+        ]);
+
         setTemas(temasData);
-        
-        // Obtener periodos disponibles
-        const periodosResponse = await fetch('http://localhost:3001/api/periodos', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!periodosResponse.ok) {
-          throw new Error('Error al obtener periodos');
-        }
-        
-        const periodosData = await periodosResponse.json();
         setPeriodos(periodosData);
-        
-      } catch (error) {
-        console.error('Error:', error);
-        setError(error.message);
+        setAsignaturas(asignaturasData);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -61,77 +56,66 @@ const ProfesorPanel = () => {
     fetchData();
   }, [token]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSaveTema = async (data) => {
     try {
-      const response = await fetch('http://localhost:3001/api/profesor/temas', {
-        method: 'POST',
+      const method = temaActual ? 'PUT' : 'POST';
+      const url = temaActual
+        ? `http://localhost:3001/api/temas-completos/${temaActual.id_tema}`
+        : 'http://localhost:3001/api/temas-completos';
+
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          ...formData,
+          ...data,
           profesor_id: usuario.id_usuario
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al crear tema');
-      }
+      if (!res.ok) throw new Error('Error al guardar tema');
 
-      const nuevoTema = await response.json();
-      setTemas([...temas, nuevoTema]);
-      setFormData({
-        titulo: '',
-        descripcion: '',
-        periodo_id: ''
-      });
-      
-    } catch (error) {
-      console.error('Error:', error);
-      alert(error.message);
+      const temaGuardado = await res.json();
+
+      setTemas(prev =>
+        temaActual
+          ? prev.map(t => (t.id_tema === temaGuardado.id_tema ? temaGuardado : t))
+          : [...prev, temaGuardado]
+      );
+
+      setIsModalOpen(false);
+      setTemaActual(null);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este tema?')) return;
-    
+    if (!window.confirm('¿Eliminar tema?')) return;
+
     try {
-      const response = await fetch(`http://localhost:3001/api/profesor/temas/${id}`, {
+      const res = await fetch(`http://localhost:3001/api/temas/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al eliminar tema');
-      }
+      if (!res.ok) throw new Error('Error al eliminar tema');
 
-      setTemas(temas.filter(tema => tema.id_tema !== id));
-      alert('Tema eliminado correctamente');
-      
-    } catch (error) {
-      console.error('Error:', error);
-      alert(error.message);
+      setTemas(prev => prev.filter(t => t.id_tema !== id));
+      alert('Tema eliminado');
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
     }
   };
 
   if (loading) {
     return (
       <div className="panel-container">
-        <div className="loading-spinner"></div>
+        <div className="loading-spinner" />
         <p>Cargando contenido...</p>
       </div>
     );
@@ -142,10 +126,7 @@ const ProfesorPanel = () => {
       <div className="panel-container">
         <h2>Error</h2>
         <p className="error-message">{error}</p>
-        <button 
-          className="retry-button"
-          onClick={() => window.location.reload()}
-        >
+        <button className="retry-button" onClick={() => window.location.reload()}>
           Reintentar
         </button>
       </div>
@@ -157,40 +138,12 @@ const ProfesorPanel = () => {
       <h2>Panel del Profesor</h2>
       <p className="welcome-message">Bienvenido, {usuario?.nombre}</p>
 
-      <div className="form-container">
-        <h3>Crear Nuevo Tema</h3>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="titulo"
-            placeholder="Título del tema"
-            value={formData.titulo}
-            onChange={handleInputChange}
-            required
-          />
-          <textarea
-            name="descripcion"
-            placeholder="Descripción"
-            value={formData.descripcion}
-            onChange={handleInputChange}
-            required
-          />
-          <select
-            name="periodo_id"
-            value={formData.periodo_id}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">Seleccione un período</option>
-            {periodos.map(periodo => (
-              <option key={periodo.id_periodo} value={periodo.id_periodo}>
-                {periodo.nombre} - {periodo.asignatura?.nombre}
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="create-button">Crear Tema</button>
-        </form>
-      </div>
+      <button className="create-button" onClick={() => {
+        setTemaActual(null);
+        setIsModalOpen(true);
+      }}>
+        Crear Nuevo Tema
+      </button>
 
       <div className="temas-list">
         <h3>Tus Temas</h3>
@@ -210,10 +163,19 @@ const ProfesorPanel = () => {
                 <tr key={tema.id_tema}>
                   <td>{tema.titulo}</td>
                   <td>{tema.descripcion}</td>
-                  <td>{tema.periodo_nombre}</td>
-                  <td>{tema.asignatura_nombre}</td>
+                  <td>{tema.periodo || 'Sin período'}</td>
+                  <td>{tema.asignatura || 'Sin asignatura'}</td>
                   <td>
-                    <button 
+                    <button
+                      onClick={() => {
+                        setTemaActual(tema);
+                        setIsModalOpen(true);
+                      }}
+                      className="create-button"
+                    >
+                      Editar
+                    </button>
+                    <button
                       onClick={() => handleDelete(tema.id_tema)}
                       className="delete-button"
                     >
@@ -230,6 +192,18 @@ const ProfesorPanel = () => {
       </div>
 
       <Link to="/" className="logout-link">Cerrar Sesión</Link>
+
+      <TemaModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setTemaActual(null);
+        }}
+        onSave={handleSaveTema}
+        temaEditando={temaActual}
+        periodos={periodos}
+        asignaturas={asignaturas}
+      />
     </div>
   );
 };

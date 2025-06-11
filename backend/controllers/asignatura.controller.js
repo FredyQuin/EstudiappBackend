@@ -102,6 +102,17 @@ exports.update = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar asignatura' });
   }
 };
+const db = require('../db');
+
+exports.getAll = async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id_asignatura, nombre FROM asignatura');
+    res.json(rows);
+  } catch (error) {
+    console.error('Error al obtener asignaturas:', error);
+    res.status(500).json({ error: 'Error al obtener asignaturas' });
+  }
+};
 
 // Eliminar asignatura
 exports.delete = async (req, res) => {
