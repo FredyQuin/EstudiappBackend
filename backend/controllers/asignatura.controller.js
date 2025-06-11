@@ -102,8 +102,6 @@ exports.update = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar asignatura' });
   }
 };
-const db = require('../db');
-
 exports.getAll = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT id_asignatura, nombre FROM asignatura');

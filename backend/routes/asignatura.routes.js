@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 const asignaturaCtrl = require('../controllers/asignatura.controller');
 
+
 // Rutas públicas
-router.get('/', asignaturaController.getAll);
 router.get('/modulo/:modulo_id', asignaturaCtrl.getByModulo);
 router.get('/completa/:id', asignaturaCtrl.getAsignaturaCompleta);
 
