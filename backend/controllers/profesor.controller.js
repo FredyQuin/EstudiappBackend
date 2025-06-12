@@ -74,7 +74,7 @@ const ProfesorPanel = () => {
     };
 
     fetchData();
-  }, [token, usuario]); // Agregado usuario como dependencia
+  }, [token, usuario]); 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

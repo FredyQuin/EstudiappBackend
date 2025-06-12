@@ -3,7 +3,7 @@ const db = require('../db');
 // Obtener todos los roles
 exports.getAll = async (req, res) => {
   try {
-    const [results] = await db.query('SELECT * FROM rol'); // Asegúrate de que la tabla se llame 'rol'
+    const [results] = await db.query('SELECT * FROM rol'); 
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener roles' });
@@ -12,7 +12,7 @@ exports.getAll = async (req, res) => {
 
 // Crear nuevo rol
 exports.create = async (req, res) => {
-  const { nombre } = req.body; // Asegúrate de que el nombre del rol se envíe en el cuerpo
+  const { nombre } = req.body; 
   const query = 'INSERT INTO rol (nombre) VALUES (?)';
   try {
     const [result] = await db.query(query, [nombre]);
@@ -25,7 +25,7 @@ exports.create = async (req, res) => {
 // Actualizar rol
 exports.update = async (req, res) => {
   const { id } = req.params;
-  const { nombre } = req.body; // Asegúrate de que el nombre del rol se esté recibiendo
+  const { nombre } = req.body; 
   const query = 'UPDATE rol SET nombre = ? WHERE id_rol = ?';
   try {
     await db.query(query, [nombre, id]);

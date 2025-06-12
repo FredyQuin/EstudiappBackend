@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const asignaturaCtrl = require('../controllers/asignatura.controller');
 
-// ✅ ESTA RUTA FALTABA
+
 router.get('/', asignaturaCtrl.getAll);
 
 router.get('/modulo/:modulo_id', asignaturaCtrl.getByModulo);
