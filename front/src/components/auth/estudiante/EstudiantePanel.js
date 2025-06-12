@@ -39,7 +39,7 @@ const EstudiantePanel = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3001/api/contenido-tema/${id_tema}`,
+        `http://localhost:3001/api/contenido/${id_tema}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
