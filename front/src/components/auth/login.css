@@ -1,0 +1,103 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #4A4238, #4D5359, #508484, #79C99E, #97DB4F);
+  padding: 20px;
+}
+
+.login-box {
+  display: flex;
+  width: 900px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+/* PANEL IZQUIERDO: Logo y bienvenida */
+.left-panel {
+  width: 45%;
+  background-color: #508484;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.left-panel img {
+  width: 100px;
+  margin-bottom: 20px;
+}
+
+.left-panel h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.left-panel p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* PANEL DERECHO: Formulario */
+.right-panel {
+  width: 55%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.right-panel h2 {
+  font-size: 26px;
+  color: #4D5359;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.right-panel input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-family: "Poppins", sans-serif;
+  background-color: #f5f8ff;
+}
+
+.right-panel button {
+  width: 100%;
+  padding: 14px;
+  background-color: #79C99E;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.right-panel button:hover {
+  background-color: #4D5359;
+}
+
+.right-panel p {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.right-panel a {
+  color: #673ab7;
+  text-decoration: underline;
+  font-weight: 500;
+}

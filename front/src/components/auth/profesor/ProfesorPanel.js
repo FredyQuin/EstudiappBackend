@@ -133,79 +133,80 @@ const ProfesorPanel = () => {
     );
   }
 
-  return (
-    <div className="panel-container">
-      <h2>Panel del Profesor</h2>
-      <p className="welcome-message">Bienvenido, {usuario?.nombre}</p>
+ return (
+  <div className="panel-container">
+    <h2>Panel del Profesor</h2>
+    <p className="welcome-message">Bienvenido, {usuario?.nombre}</p>
 
-      <button className="create-button" onClick={() => {
-        setTemaActual(null);
-        setIsModalOpen(true);
-      }}>
-        Crear Nuevo Tema
-      </button>
+    <button className="create-button" onClick={() => {
+      setTemaActual(null);
+      setIsModalOpen(true);
+    }}>
+      Crear Nuevo Tema
+    </button>
 
-      <div className="temas-list">
-        <h3>Tus Temas</h3>
-        {temas.length > 0 ? (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Descripción</th>
-                <th>Periodo</th>
-                <th>Asignatura</th>
-                <th>Acciones</th>
+    <div className="temas-list">
+      <h3>Tus Temas</h3>
+      {temas.length > 0 ? (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Descripción</th>
+              <th>Periodo</th>
+              <th>Asignatura</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {temas.map(tema => (
+              <tr key={tema.id_tema}>
+                <td>{tema.titulo}</td>
+                <td>{tema.descripcion}</td>
+                <td>{tema.periodo || 'Sin período'}</td>
+                <td>{tema.asignatura || 'Sin asignatura'}</td>
+                <td>
+                  <button
+                    onClick={() => {
+                      setTemaActual(tema);
+                      setIsModalOpen(true);
+                    }}
+                    className="create-button"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(tema.id_tema)}
+                    className="delete-button"
+                  >
+                    Eliminar
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {temas.map(tema => (
-                <tr key={tema.id_tema}>
-                  <td>{tema.titulo}</td>
-                  <td>{tema.descripcion}</td>
-                  <td>{tema.periodo || 'Sin período'}</td>
-                  <td>{tema.asignatura || 'Sin asignatura'}</td>
-                  <td>
-                    <button
-                      onClick={() => {
-                        setTemaActual(tema);
-                        setIsModalOpen(true);
-                      }}
-                      className="create-button"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(tema.id_tema)}
-                      className="delete-button"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="no-content-message">No has creado ningún tema aún.</p>
-        )}
-      </div>
-
-      <Link to="/" className="logout-link">Cerrar Sesión</Link>
-
-      <TemaModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setTemaActual(null);
-        }}
-        onSave={handleSaveTema}
-        temaEditando={temaActual}
-        periodos={periodos}
-        asignaturas={asignaturas}
-      />
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="no-content-message">No has creado ningún tema aún.</p>
+      )}
     </div>
-  );
+
+    <Link to="/" className="logout-link">Cerrar Sesión</Link>
+
+    <TemaModal
+      isOpen={isModalOpen}
+      onClose={() => {
+        setIsModalOpen(false);
+        setTemaActual(null);
+      }}
+      onSave={handleSaveTema}
+      temaEditando={temaActual}
+      periodos={periodos}
+      asignaturas={asignaturas}
+    />
+  </div>
+);
+
 };
 
 export default ProfesorPanel;
