@@ -39,12 +39,5 @@ exports.getByTemaId = async (req, res) => {
   }
 };
 
-// Eliminar todas las secciones de un tema
-exports.deleteByTemaId = async (temaId) => {
-  try {
-    await db.query('DELETE FROM contenido_tema WHERE tema_id = ?', [temaId]);
-  } catch (err) {
-    console.error('Error al eliminar contenido del tema:', err);
-    throw err;
-  }
-};
+
+

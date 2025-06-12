@@ -1,13 +1,12 @@
-// routes/asignatura.routes.js
 const express = require('express');
 const router = express.Router();
 const asignaturaCtrl = require('../controllers/asignatura.controller');
 
+// ✅ ESTA RUTA FALTABA
+router.get('/', asignaturaCtrl.getAll);
 
-// Rutas públicas
 router.get('/modulo/:modulo_id', asignaturaCtrl.getByModulo);
 router.get('/completa/:id', asignaturaCtrl.getAsignaturaCompleta);
-
 
 router.post('/', asignaturaCtrl.create);
 router.put('/:id', asignaturaCtrl.update);

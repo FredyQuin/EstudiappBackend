@@ -7,7 +7,7 @@ const AdminPanel = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/admin/historial", {
+    fetch("http://localhost:3001/api/historial", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -36,7 +36,9 @@ const AdminPanel = () => {
     })
       .then((res) => {
         if (res.ok) {
-          setUsuarios((prev) => prev.filter((u) => u.id_usuario !== idUsuario));
+          setUsuarios((prev) =>
+            prev.filter((u) => u.id_usuario !== idUsuario)
+          );
           alert("Usuario eliminado correctamente");
         } else {
           alert("Error al eliminar usuario");
@@ -65,14 +67,62 @@ const AdminPanel = () => {
 
       <h3>Usuarios Registrados</h3>
       <table className="data-table">
-        {/* ... (tabla de usuarios) */}
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {usuariosFiltrados.map((usuario) => (
+            <tr key={usuario.id_usuario}>
+              <td>{usuario.id_usuario}</td>
+              <td>{usuario.nombre}</td>
+              <td>{usuario.correo}</td>
+              <td>
+                <button onClick={() => handleEliminarUsuario(usuario.id_usuario)}>
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
 
       <hr style={{ margin: "40px 0" }} />
 
       <h3>Historial de Eliminaciones</h3>
       <table className="data-table">
-        {/* ... (tabla de historial) */}
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Entidad</th>
+            <th>Nombre Eliminado</th>
+            <th>Eliminado Por</th>
+            <th>Descripción</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {historial.length > 0 ? (
+            historial.map((h) => (
+              <tr key={h.id}>
+                <td>{h.id}</td>
+                <td>{h.entidad}</td>
+                <td>{h.nombre_entidad}</td>
+                <td>{h.nombre_usuario || "Desconocido"}</td>
+                <td>{h.descripcion}</td>
+                <td>{new Date(h.fecha).toLocaleString()}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6">No hay registros aún.</td>
+            </tr>
+          )}
+        </tbody>
       </table>
     </div>
   );

@@ -497,3 +497,52 @@ button:hover,
     font-size: 16px;
   }
 }
+.panel-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+}
+
+.temas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.tema-card {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: #fefefe;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.tema-card h3 {
+  margin-top: 0;
+}
+
+.tema-descripcion {
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.tema-etiquetas {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.seccion-tema {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 3px solid #2196f3;
+}
+
+.seccion-tema h4 {
+  margin-bottom: 0.3rem;
+}
+
+.contenido-lista ul {
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}

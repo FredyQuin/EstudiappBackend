@@ -1,0 +1,59 @@
+.estudiante-panel {
+  padding: 20px;
+  background: #f9f9f9;
+}
+
+.grid-temas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.tema-card {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.tema-card:hover {
+  transform: scale(1.02);
+}
+
+.ver-button {
+  background-color: #1976d2;
+  color: white;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ver-button:hover {
+  background-color: #1565c0;
+}
+
+.contenido-tema {
+  margin-top: 1rem;
+  background-color: #f3f3f3;
+  padding: 1rem;
+  border-radius: 6px;
+}
+
+.seccion-tema {
+  margin-bottom: 1.5rem;
+}
+
+.logout-link {
+  display: inline-block;
+  margin-top: 2rem;
+  color: #d32f2f;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.logout-link:hover {
+  text-decoration: underline;
+}

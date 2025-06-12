@@ -60,8 +60,8 @@ const ProfesorPanel = () => {
     try {
       const method = temaActual ? 'PUT' : 'POST';
       const url = temaActual
-        ? `http://localhost:3001/api/temas-completos/${temaActual.id_tema}`
-        : 'http://localhost:3001/api/temas-completos';
+        ? `http://localhost:3001/api/temas/${temaActual.id_tema}`
+        : 'http://localhost:3001/api/temas';
 
       const res = await fetch(url, {
         method,
