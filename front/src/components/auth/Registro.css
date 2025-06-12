@@ -1,0 +1,22 @@
+.registro-form label {
+  margin-top: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.registro-form input,
+.registro-form select {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.success-message {
+  color: green;
+  text-align: center;
+  margin-top: 1rem;
+}

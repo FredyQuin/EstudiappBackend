@@ -74,7 +74,7 @@ exports.create = async (req, res) => {
       [nombre, descripcion, asignatura_id]
     );
 
-    // Como ya no usas autenticación, adminId queda en null
+    // Como ya no se usa autenticación, adminId queda en null
     const adminId = null;
 
     await db.execute(

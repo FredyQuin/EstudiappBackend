@@ -1,5 +1,5 @@
 // historial.controller.js
-const db = require('../db'); // o como tengas configurado tu pool/connection
+const db = require('../db'); //
 
 exports.obtenerHistorial = async (req, res) => {
   try {
