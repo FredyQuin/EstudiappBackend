@@ -48,8 +48,6 @@ const EstudiantePanel = () => {
       if (!res.ok) throw new Error("No se pudo obtener el contenido");
 
       const contenido = await res.json();
-      console.log("Contenido recibido:", contenido);
-
       setTemaActivo({ id_tema, contenido });
     } catch (err) {
       console.error(err);
@@ -58,37 +56,36 @@ const EstudiantePanel = () => {
   };
 
   return (
-    <div className="panel-container estudiante-panel">
-      <h2>Bienvenido al Panel del Estudiante</h2>
-      <p>Temas disponibles del primer trimestre</p>
+    <div className="panel-container">
+      <h2 style={{ marginBottom: "1rem" }}>Bienvenido al Panel del Estudiante</h2>
+      <p className="welcome-message">Temas disponibles del primer trimestre</p>
 
       {error && <p className="error-message">{error}</p>}
 
-      <div className="grid-temas">
+      <div className="temas-grid">
         {temas.map((tema) => (
           <div className="tema-card" key={tema.id_tema}>
             <h3>{tema.titulo}</h3>
-            <p>{tema.descripcion}</p>
+            <p className="tema-descripcion">{tema.descripcion}</p>
+            <p className="tema-etiquetas">
+              <strong>Asignatura:</strong> {tema.asignatura || "N/A"} |{" "}
+              <strong>Período:</strong> {tema.periodo || "N/A"}
+            </p>
             <button
               className="ver-button"
               onClick={() => handleVerContenido(tema.id_tema)}
             >
-              {temaActivo?.id_tema === tema.id_tema
-                ? "Ocultar"
-                : "Ver Contenido"}
+              {temaActivo?.id_tema === tema.id_tema ? "Ocultar" : "Ver Contenido"}
             </button>
 
             {temaActivo?.id_tema === tema.id_tema && (
               <div className="contenido-tema">
-                {Array.isArray(temaActivo.contenido) &&
-                temaActivo.contenido.length > 0 ? (
+                {Array.isArray(temaActivo.contenido) && temaActivo.contenido.length > 0 ? (
                   temaActivo.contenido.map((seccion, i) => (
                     <div key={i} className="seccion-tema">
                       <h4>{seccion.titulo_seccion}</h4>
                       <div
-                        dangerouslySetInnerHTML={{
-                          __html: seccion.contenido_largo,
-                        }}
+                        dangerouslySetInnerHTML={{ __html: seccion.contenido_largo }}
                       />
                     </div>
                   ))
