@@ -4,6 +4,7 @@ const AdminPanel = () => {
   const [historial, setHistorial] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [usuarioActual, setUsuarioActual] = useState(null); // Estado para el usuario a editar
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -47,6 +48,44 @@ const AdminPanel = () => {
       .catch((err) => console.error(err));
   };
 
+  const handleEditarUsuario = (usuario) => {
+    setUsuarioActual(usuario); // Establecer el usuario actual para editar
+  };
+
+  const handleGuardarCambios = async () => {
+    if (!usuarioActual) return;
+
+    console.log('Datos a enviar:', usuarioActual); // Verifica los datos que se envían
+
+    try {
+      const res = await fetch(`http://localhost:3001/api/usuarios/${usuarioActual.id_usuario}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nombre: usuarioActual.nombre,
+          correo: usuarioActual.correo,
+          contrasena: usuarioActual.contrasena, // Si deseas permitir la actualización de la contraseña
+          rol_id: usuarioActual.rol_id // Asegúrate de que esto sea el ID del rol
+        }),
+      });
+
+      if (res.ok) {
+        setUsuarios((prev) =>
+          prev.map((u) => (u.id_usuario === usuarioActual.id_usuario ? usuarioActual : u))
+        );
+        alert("Usuario actualizado correctamente");
+        setUsuarioActual(null); // Cerrar el modal
+      } else {
+        alert("Error al actualizar usuario");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const usuariosFiltrados = usuarios.filter(
     (u) =>
       u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -82,14 +121,53 @@ const AdminPanel = () => {
               <td>{usuario.nombre}</td>
               <td>{usuario.correo}</td>
               <td>
-                <button onClick={() => handleEliminarUsuario(usuario.id_usuario)}>
-                  Eliminar
-                </button>
+                <button onClick={() => handleEditarUsuario(usuario)}>Editar</button>
+                <button onClick={() => handleEliminarUsuario(usuario.id_usuario)}>Eliminar</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {usuarioActual && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Editar Usuario</h3>
+            <input
+              type="hidden" // Campo oculto para el ID de usuario
+              value={usuarioActual.id_usuario}
+              onChange={(e) => setUsuarioActual({ ...usuarioActual, id_usuario: e.target.value })}
+            />
+            <input
+              type="text"
+              value={usuarioActual.nombre}
+              onChange={(e) => setUsuarioActual({ ...usuarioActual, nombre: e.target.value })}
+              placeholder="Nombre"
+            />
+            <input
+              type="text"
+              value={usuarioActual.correo}
+              onChange={(e) => setUsuarioActual({ ...usuarioActual, correo: e.target.value })}
+              placeholder="Correo"
+            />
+            <input
+              type="password"
+              value={usuarioActual.contrasena} // Si deseas permitir la actualización de la contraseña
+              onChange={(e) => setUsuarioActual({ ...usuarioActual, contrasena: e.target.value })}
+              placeholder="Contraseña (dejar vacío si no se desea cambiar)"
+            />
+            <select
+              value={usuarioActual.rol_id} // Asegúrate de que esto sea el ID del rol
+              onChange={(e) => setUsuarioActual({ ...usuarioActual, rol_id: e.target.value })}
+            >
+              <option value="1">Profesor</option> {/* Asegúrate de que estos valores coincidan con los IDs en tu base de datos */}
+              <option value="2">Estudiante</option>
+            </select>
+            <button onClick={handleGuardarCambios}>Guardar Cambios</button>
+            <button onClick={() => setUsuarioActual(null)}>Cancelar</button>
+          </div>
+        </div>
+      )}
 
       <hr style={{ margin: "40px 0" }} />
 
