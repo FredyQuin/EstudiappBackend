@@ -1,52 +1,56 @@
 // controllers/authController.js
 const db = require('../db');
-const { secret } = require('./auth');
+const { secret } = require('../middleware/auth'); // ojo la ruta
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
-exports.login = (req, res) => {
-  const { correo, contrasena } = req.body;
+// =============================================
+// REGISTRO DE USUARIO
+// =============================================
+exports.register = async (req, res) => {
+  try {
+    const { nombre, correo, contrasena, rol_id } = req.body;
 
-  if (!correo || !contrasena) {
-    return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
-  }
-
-  db.query(
-    'SELECT id_usuario, nombre, correo, rol_id FROM usuario WHERE correo = ? AND contrasena = ?',
-    [correo, contrasena],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: 'Error en el servidor' });
-      if (results.length === 0) return res.status(401).json({ error: 'Credenciales incorrectas' });
-
-      const user = results[0];
-      
-      // Crear token JWT
-      const token = jwt.sign(
-        {
-          id: user.id_usuario,
-          rol: user.rol_id
-        },
-        secret,
-        { expiresIn: '8h' }
-      );
-
-      res.json({
-        message: 'Login exitoso',
-        token,
-        user: {
-          id: user.id_usuario,
-          nombre: user.nombre,
-          correo: user.correo,
-          rol: user.rol_id
-        }
-      });
+    // Validar campos básicos
+    if (!nombre || !correo || !contrasena || !rol_id) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
-  );
-};
 
-exports.verifyToken = (req, res) => {
-  // El middleware ya verificó el token
-  res.json({
-    user: req.user,
-    message: 'Token válido'
-  });
+    // Verificar si ya existe ese correo
+    const [existing] = await db.query('SELECT id_usuario FROM usuario WHERE correo = ?', [correo]);
+    if (existing.length > 0) {
+      return res.status(409).json({ error: 'El correo ya está registrado' });
+    }
+
+    // Hashear contraseña
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
+
+    // Insertar en la base de datos
+    const [result] = await db.query(
+      'INSERT INTO usuario (nombre, correo, contrasena, rol_id) VALUES (?, ?, ?, ?)',
+      [nombre, correo, hashedPassword, rol_id]
+    );
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: result.insertId, rol: rol_id },
+      secret,
+      { expiresIn: '8h' }
+    );
+
+    res.status(201).json({
+      message: 'Usuario registrado con éxito',
+      token,
+      user: {
+        id: result.insertId,
+        nombre,
+        correo,
+        rol: rol_id
+      }
+    });
+
+  } catch (error) {
+    console.error('Error en registro:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
 };
