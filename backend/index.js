@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
 
 // Configuración inicial
 const app = express();
@@ -41,21 +43,28 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   try {
-    const [results] = await db.query(
-      'SELECT id_usuario, nombre, correo, rol_id FROM usuario WHERE correo = ? AND contrasena = ?',
-      [correo, contrasena]
+    // 1. Buscar por correo
+    const result = await db.query(
+      'SELECT id_usuario, nombre, correo, contrasena, rol_id FROM usuario WHERE correo = $1',
+      [correo]
     );
 
-    if (!results.length) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    const user = results[0];
+    const user = result.rows[0];
 
-    // Crear token JWT
+    // 2. Comparar contraseñas
+    const esValida = await bcrypt.compare(contrasena, user.contrasena);
+    if (!esValida) {
+      return res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
+
+    // 3. Crear token
     const token = jwt.sign(
       { id: user.id_usuario, rol: user.rol_id },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
 
@@ -66,15 +75,15 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id_usuario,
         nombre: user.nombre,
         correo: user.correo,
-        rol: user.rol_id // 1=profesor, 2=estudiante, 3=admin
+        rol: user.rol_id
       }
     });
-
   } catch (err) {
     console.error('Error en login:', err);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 });
+
 
 // ==============================
 // Endpoint para verificar token y rol
