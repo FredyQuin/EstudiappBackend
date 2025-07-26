@@ -3,8 +3,8 @@ const db = require('../db');
 // Obtener TODOS los módulos
 exports.getAll = async (req, res) => {
   try {
-    const [results] = await db.query('SELECT * FROM modulo');
-    res.json(results);
+    const { rows } = await db.query('SELECT * FROM modulo');
+    res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al obtener módulos' });
@@ -15,11 +15,11 @@ exports.getAll = async (req, res) => {
 exports.getByProfesor = async (req, res) => {
   const { profesor_id } = req.params;
   try {
-    const [results] = await db.query(
-      'SELECT * FROM modulo WHERE profesor_id = ?',
+    const { rows } = await db.query(
+      'SELECT * FROM modulo WHERE profesor_id = $1',
       [profesor_id]
     );
-    res.json(results);
+    res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al buscar módulos del profesor' });
@@ -30,26 +30,26 @@ exports.getByProfesor = async (req, res) => {
 exports.getModuloCompleto = async (req, res) => {
   const { id } = req.params;
   try {
-    const [results] = await db.query(
+    const { rows } = await db.query(
       `SELECT m.*, 
        p.nombre AS profesor_nombre,
-       GROUP_CONCAT(a.nombre) AS asignaturas
+       STRING_AGG(a.nombre, ',') AS asignaturas
        FROM modulo m
        LEFT JOIN profesor p ON m.profesor_id = p.id_profesor
        LEFT JOIN asignatura a ON a.modulo_id = m.id_modulo
-       WHERE m.id_modulo = 1
-       GROUP BY m.id_modulo`,
+       WHERE m.id_modulo = $1
+       GROUP BY m.id_modulo, p.nombre`,
       [id]
     );
 
-    if (!results.length) {
+    if (!rows.length) {
       return res.status(404).json({ error: 'Módulo no encontrado' });
     }
 
     const modulo = {
-      ...results[0],
-      asignaturas: results[0].asignaturas
-        ? results[0].asignaturas.split(',')
+      ...rows[0],
+      asignaturas: rows[0].asignaturas
+        ? rows[0].asignaturas.split(',')
         : []
     };
 
@@ -69,28 +69,27 @@ exports.create = async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
-    const [result] = await db.execute(
-      'INSERT INTO modulo (nombre, descripcion, asignatura_id) VALUES (?, ?, ?)',
+    const result = await db.query(
+      'INSERT INTO modulo (nombre, descripcion, asignatura_id) VALUES ($1, $2, $3) RETURNING id_modulo',
       [nombre, descripcion, asignatura_id]
     );
 
-    // Como ya no se usa autenticación, adminId queda en null
+    const insertId = result.rows[0].id_modulo;
     const adminId = null;
 
-    await db.execute(
+    await db.query(
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
-       VALUES (?, ?, ?, ?, ?)`,
-      ['modulo', result.insertId, nombre, adminId, 'Creación pública sin admin']
+       VALUES ($1, $2, $3, $4, $5)`,
+      ['modulo', insertId, nombre, adminId, 'Creación pública sin admin']
     );
 
-    res.status(201).json({ id: result.insertId });
+    res.status(201).json({ id: insertId });
   } catch (error) {
     console.error('Error en create módulo:', error);
     res.status(500).json({ error: 'Error al crear módulo' });
   }
 };
-
 
 // Actualizar módulo
 exports.update = async (req, res) => {
@@ -99,7 +98,7 @@ exports.update = async (req, res) => {
 
   try {
     await db.query(
-      'UPDATE modulo SET nombre = ?, profesor_id = ? WHERE id_modulo = ?',
+      'UPDATE modulo SET nombre = $1, profesor_id = $2 WHERE id_modulo = $3',
       [nombre, profesor_id, id]
     );
     res.json({ message: 'Módulo actualizado' });
@@ -114,7 +113,7 @@ exports.delete = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await db.promise().query('SELECT * FROM modulo WHERE id_modulo = ?', [id]);
+    const { rows } = await db.query('SELECT * FROM modulo WHERE id_modulo = $1', [id]);
 
     if (!rows.length) {
       return res.status(404).json({ error: 'Módulo no encontrado' });
@@ -122,12 +121,12 @@ exports.delete = async (req, res) => {
 
     const modulo = rows[0];
 
-    await db.promise().query('DELETE FROM modulo WHERE id_modulo = ?', [id]);
+    await db.query('DELETE FROM modulo WHERE id_modulo = $1', [id]);
 
-    await db.promise().query(
+    await db.query(
       `INSERT INTO historial_eliminacion 
         (entidad, id_entidad, nombre_entidad, eliminado_por, descripcion)
-       VALUES (?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5)`,
       ['modulo', id, modulo.nombre, null, 'Eliminación pública sin admin']
     );
 
